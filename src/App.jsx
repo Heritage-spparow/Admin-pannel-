@@ -24,6 +24,7 @@ import Settings from "./pages/Settings.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import EditProduct from "./pages/EditProduct.jsx";
 import AdminLandingPage from "./pages/AdminLandingPage.jsx";
+import AboutEditor from "./pages/AboutEditor.jsx";
 
 const App = () => {
   return (
@@ -59,6 +60,7 @@ const App = () => {
                   </RoleGuard>
                 }
               />
+              <Route path="/admin/about" element={<AboutEditor />} />
               <Route
                 path="/products/edit/:id"
                 element={

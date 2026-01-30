@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   User,
-  LogOut
+  LogOut,
+  icons
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext.jsx';
@@ -23,10 +24,10 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'All products', href: '/products', icon: Package },
   { name: 'Orders list', href: '/orders', icon: ShoppingCart },
-  { name: 'Product Details', href: '/products/details', icon: Package },
   { name: 'Add New Product', href: '/products/new', icon: Package },
   { name: 'Notification', href: '/notifications', icon: Bell },
-  { name: 'Search', href: '/search', icon: Search },
+  // { name: 'Search', href: '/search', icon: Search },
+  {name: 'About', href: '/admin/about' , icon : User },
   { name: 'Admin', href: '/admin', icon: Settings },
 ];
 
