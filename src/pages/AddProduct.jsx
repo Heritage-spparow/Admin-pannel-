@@ -143,11 +143,11 @@ export default function AddProduct() {
       /* images */
       data.append("coverImage", coverImage);
 
-      galleryImages.forEach((file) =>
+      galleryImages.forEach((file) => 
         data.append("galleryImages", file)
       );
 
-      await api.post("/api/products", data);
+      await api.post("/products-enhanced", data);
 
       toast.success("Product created successfully!");
       navigate("/products");
