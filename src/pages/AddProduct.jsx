@@ -22,18 +22,17 @@ export default function AddProduct() {
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
 
-  /* ================= FORM DATA ================= */
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    shortDescription: "",
-    category: "",
-    collection: "",
-    price: "",
-    comparePrice: "",
-    active: true,
-  });
-
+ const [formData, setFormData] = useState({
+  name: "",
+  description: "",
+  shortDescription: "",
+  category: "",
+  type: "Jutti",
+  collection: "",
+  price: "",
+  comparePrice: "",
+  active: true,
+});
   /* ================= SIZES (NUMBER) ================= */
   const [sizes, setSizes] = useState([{ size: "", stock: 0 }]);
 
@@ -224,6 +223,13 @@ export default function AddProduct() {
                 placeholder="Category *"
                 className="p-2 border rounded-lg"
                 value={formData.category}
+                onChange={handleInputChange}
+              />
+                <input
+                name="category"
+                placeholder="type"
+                className="p-2 border rounded-lg"
+                value={formData.type}
                 onChange={handleInputChange}
               />
               <input

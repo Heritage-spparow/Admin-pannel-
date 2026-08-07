@@ -25,6 +25,7 @@ import NotFound from "./pages/NotFound.jsx";
 import EditProduct from "./pages/EditProduct.jsx";
 import AdminLandingPage from "./pages/AdminLandingPage.jsx";
 import AboutEditor from "./pages/AboutEditor.jsx";
+import CoverImage from "./pages/CoverImage.jsx";
 
 const App = () => {
   return (
@@ -52,12 +53,22 @@ const App = () => {
                   </RoleGuard>
                 }
               />
+               
                <Route
                 path="/landing"
                 element={
                   <RoleGuard allow={["admin", "manager"]}>
                    <AdminLandingPage />
                   </RoleGuard>
+                }
+              />
+                 
+               <Route
+                path="/coverImg"
+                element={
+      
+                   <CoverImage/>
+               
                 }
               />
               <Route path="/admin/about" element={<AboutEditor />} />

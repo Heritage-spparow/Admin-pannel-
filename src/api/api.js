@@ -61,7 +61,17 @@ export const productAPI = {
   getFeatured: () => api.get('/products-enhanced/featured'),
   getTopRated: () => api.get('/products-enhanced/top/rated'),
   getCategories: () => api.get('/products-enhanced/categories'),
+   getCollections: () => api.get("/products-enhanced/collections"),
   search: (query) => api.get('/products-enhanced', { params: { search: query } }),
+};
+export const collectionAPI = {
+  getAll: () => api.post("/collections/sync"),
+
+  updateCoverImage: (name, data) =>
+    api.put(`/collections/${name}/cover`, data),
+
+  deleteCoverImage: (name) =>
+    api.delete(`/collections/${name}/cover`),
 };
 
 // Cart API calls

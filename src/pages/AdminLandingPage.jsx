@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { landingAPI } from "../api/api";
+import { landingAPI, productAPI } from "../api/api";
 import ProductPickerModal from "./ProductPickerModal";
 import { toast } from "react-toastify";
 
@@ -7,16 +7,19 @@ export default function AdminLandingPage() {
   const [loading, setLoading] = useState(false);
   const [pickerIndex, setPickerIndex] = useState(null);
 
-  /* ================= STATE ================= */
+  const [collections, setCollections] = useState([]);
+
   const [data, setData] = useState({
     sectionOne: {
-      category: "",
+      collection: "",
       ctaLabel: "Explore Collection",
     },
+
     sectionTwo: {
       ctaLabel: "Shop Now",
       items: [],
     },
+
     sectionThree: {
       link: "/campaign",
       ctaLabel: "Explore Campaign",
@@ -30,20 +33,28 @@ export default function AdminLandingPage() {
 
   /* ================= FETCH ================= */
   useEffect(() => {
-    landingAPI
-      .get()
-      .then((res) => {
-        if (!res.data?.landing) return;
+    const loadData = async () => {
+      try {
+        const [landingRes, collectionsRes] = await Promise.all([
+          landingAPI.get(),
+          productAPI.getCollections(),
+        ]);
 
-        const l = res.data.landing;
+        setCollections(collectionsRes.data.collections || []);
+
+        if (!landingRes.data?.landing) return;
+
+        const l = landingRes.data.landing;
 
         setData({
           sectionOne: {
-            category: l.sectionOne?.category || "",
+            collection: l.sectionOne?.collection || "",
             ctaLabel: l.sectionOne?.ctaLabel || "Explore Collection",
           },
+
           sectionTwo: {
             ctaLabel: l.sectionTwo?.ctaLabel || "Shop Now",
+
             items:
               l.sectionTwo?.items?.map((i) => ({
                 productId: i.productId?._id || i.productId,
@@ -52,14 +63,20 @@ export default function AdminLandingPage() {
                 image: i.image,
               })) || [],
           },
+
           sectionThree: {
             link: l.sectionThree?.link || "/campaign",
-            ctaLabel:
-              l.sectionThree?.ctaLabel || "Explore Campaign",
+
+            ctaLabel: l.sectionThree?.ctaLabel || "Explore Campaign",
           },
         });
-      })
-      .catch(() => toast.error("Failed to load landing page"));
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load landing page");
+      }
+    };
+
+    loadData();
   }, []);
 
   /* ================= SAVE ================= */
@@ -68,28 +85,38 @@ export default function AdminLandingPage() {
     try {
       const fd = new FormData();
 
-      // ---------- SECTION 1 ----------
-      fd.append("sectionOneCategory", data.sectionOne.category);
+      /* ================= SECTION ONE ================= */
+
+      fd.append("sectionOneCollection", data.sectionOne.collection);
+
       fd.append("sectionOneCta", data.sectionOne.ctaLabel);
+
       if (images.sectionOne) {
-        fd.append("sectionOneImage", images.sectionOne);
+        fd.append("sectionOneCoverImage", images.sectionOne);
       }
 
-      // ---------- SECTION 2 ----------
+      /* ================= SECTION 2 ================= */
+
       fd.append("sectionTwoCta", data.sectionTwo.ctaLabel);
 
       const cleanCarouselItems = data.sectionTwo.items.map(
-        ({ file, productName, ...rest }) => rest
+        ({ file, productName, ...rest }) => rest,
       );
+
       fd.append("carouselItems", JSON.stringify(cleanCarouselItems));
 
       data.sectionTwo.items.forEach((item) => {
-        if (item.file) fd.append("carouselImages", item.file);
+        if (item.file) {
+          fd.append("carouselImages", item.file);
+        }
       });
 
-      // ---------- SECTION 3 ----------
+      /* ================= SECTION 3 ================= */
+
       fd.append("sectionThreeLink", data.sectionThree.link);
+
       fd.append("sectionThreeCta", data.sectionThree.ctaLabel);
+
       if (images.sectionThree) {
         fd.append("sectionThreeImage", images.sectionThree);
       }
@@ -105,29 +132,70 @@ export default function AdminLandingPage() {
     }
   };
 
-  /* ================= UI ================= */
-  return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Landing Page CMS</h1>
+/* ================= UI ================= */
+return (
+  <div className="space-y-8">
+    <h1 className="text-2xl font-bold">Landing Page CMS</h1>
 
-      {/* ================= SECTION 1 ================= */}
-      <div className="bg-white border rounded-lg p-6 space-y-4">
-        <h2 className="font-semibold">Section 1 – Hero</h2>
+    {/* ================= SECTION 1 ================= */}
+    <div className="bg-white border rounded-lg p-6 space-y-5">
+      <h2 className="font-semibold text-lg">
+        Section 1 – Featured Collection
+      </h2>
 
-        <input
-          className="w-full border p-2 rounded"
-          placeholder="Category (women / bridal)"
-          value={data.sectionOne.category}
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Collection
+        </label>
+
+        <select
+          className="w-full border rounded-lg p-3"
+          value={data.sectionOne.collection}
           onChange={(e) =>
             setData((p) => ({
               ...p,
               sectionOne: {
                 ...p.sectionOne,
-                category: e.target.value,
+                collection: e.target.value,
+              },
+            }))
+          }
+        >
+          <option value="">Select Collection</option>
+
+          {collections.map((collection) => (
+            <option key={collection} value={collection}>
+              {collection}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          CTA Button
+        </label>
+
+        <input
+          className="w-full border rounded-lg p-3"
+          placeholder="Explore Collection"
+          value={data.sectionOne.ctaLabel}
+          onChange={(e) =>
+            setData((p) => ({
+              ...p,
+              sectionOne: {
+                ...p.sectionOne,
+                ctaLabel: e.target.value,
               },
             }))
           }
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Collection Cover Image
+        </label>
 
         <input
           type="file"
@@ -140,122 +208,162 @@ export default function AdminLandingPage() {
           }
         />
       </div>
+    </div>
 
-      {/* ================= SECTION 2 ================= */}
-      <div className="bg-white border rounded-lg p-6 space-y-4">
-        <h2 className="font-semibold">Section 2 – Carousel</h2>
+    {/* ================= SECTION 2 ================= */}
 
-        {data.sectionTwo.items.map((item, idx) => (
-          <div key={idx} className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => setPickerIndex(idx)}
-              className="border p-2 rounded text-left"
-            >
-              {item.productName || "Select Product"}
-            </button>
+    <div className="bg-white border rounded-lg p-6 space-y-4">
+      <h2 className="font-semibold text-lg">
+        Section 2 – Featured Products
+      </h2>
 
-            <input
-              className="border p-2 rounded"
-              placeholder="Label (Basant)"
-              value={item.label || ""}
-              onChange={(e) => {
-                const items = [...data.sectionTwo.items];
-                items[idx].label = e.target.value;
-                setData((p) => ({
-                  ...p,
-                  sectionTwo: { ...p.sectionTwo, items },
-                }));
-              }}
-            />
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const items = [...data.sectionTwo.items];
-                items[idx].file = e.target.files[0];
-                setData((p) => ({
-                  ...p,
-                  sectionTwo: { ...p.sectionTwo, items },
-                }));
-              }}
-            />
-          </div>
-        ))}
-
-        <button
-          onClick={() =>
-            setData((p) => ({
-              ...p,
-              sectionTwo: {
-                ...p.sectionTwo,
-                items: [...p.sectionTwo.items, {}],
-              },
-            }))
-          }
-          className="text-sm text-blue-600"
+      {data.sectionTwo.items.map((item, idx) => (
+        <div
+          key={idx}
+          className="grid grid-cols-3 gap-3 items-center"
         >
-          + Add Carousel Slide
-        </button>
-      </div>
+          <button
+            onClick={() => setPickerIndex(idx)}
+            className="border rounded-lg p-3 text-left hover:bg-gray-50"
+          >
+            {item.productName || "Select Product"}
+          </button>
 
-      {/* ================= SECTION 3 ================= */}
-      <div className="bg-white border rounded-lg p-6 space-y-4">
-        <h2 className="font-semibold">Section 3 – Campaign</h2>
+          <input
+            className="border rounded-lg p-3"
+            placeholder="Display Label"
+            value={item.label || ""}
+            onChange={(e) => {
+              const items = [...data.sectionTwo.items];
+              items[idx].label = e.target.value;
 
-        <input
-          className="w-full border p-2 rounded"
-          placeholder="Campaign Link"
-          value={data.sectionThree.link}
-          onChange={(e) =>
-            setData((p) => ({
-              ...p,
-              sectionThree: {
-                ...p.sectionThree,
-                link: e.target.value,
-              },
-            }))
-          }
-        />
+              setData((p) => ({
+                ...p,
+                sectionTwo: {
+                  ...p.sectionTwo,
+                  items,
+                },
+              }));
+            }}
+          />
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setImages((p) => ({
-              ...p,
-              sectionThree: e.target.files[0],
-            }))
-          }
-        />
-      </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const items = [...data.sectionTwo.items];
+              items[idx].file = e.target.files[0];
 
-      {/* ================= SAVE ================= */}
+              setData((p) => ({
+                ...p,
+                sectionTwo: {
+                  ...p.sectionTwo,
+                  items,
+                },
+              }));
+            }}
+          />
+        </div>
+      ))}
+
       <button
-        onClick={handleSave}
-        disabled={loading}
-        className="px-6 py-3 bg-black text-white rounded"
-      >
-        {loading ? "Saving..." : "Save Landing Page"}
-      </button>
-
-      {/* ================= PRODUCT PICKER ================= */}
-      <ProductPickerModal
-        open={pickerIndex !== null}
-        onClose={() => setPickerIndex(null)}
-        onSelect={(product) => {
-          const items = [...data.sectionTwo.items];
-          items[pickerIndex] = {
-            ...items[pickerIndex],
-            productId: product._id,
-            productName: product.name,
-          };
+        onClick={() =>
           setData((p) => ({
             ...p,
-            sectionTwo: { ...p.sectionTwo, items },
-          }));
-        }}
+            sectionTwo: {
+              ...p.sectionTwo,
+              items: [...p.sectionTwo.items, {}],
+            },
+          }))
+        }
+        className="text-blue-600 font-medium"
+      >
+        + Add Carousel Slide
+      </button>
+    </div>
+
+    {/* ================= SECTION 3 ================= */}
+
+    <div className="bg-white border rounded-lg p-6 space-y-5">
+      <h2 className="font-semibold text-lg">
+        Section 3 – Campaign
+      </h2>
+
+      <input
+        className="w-full border rounded-lg p-3"
+        placeholder="/campaign"
+        value={data.sectionThree.link}
+        onChange={(e) =>
+          setData((p) => ({
+            ...p,
+            sectionThree: {
+              ...p.sectionThree,
+              link: e.target.value,
+            },
+          }))
+        }
+      />
+
+      <input
+        className="w-full border rounded-lg p-3"
+        placeholder="Explore Campaign"
+        value={data.sectionThree.ctaLabel}
+        onChange={(e) =>
+          setData((p) => ({
+            ...p,
+            sectionThree: {
+              ...p.sectionThree,
+              ctaLabel: e.target.value,
+            },
+          }))
+        }
+      />
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) =>
+          setImages((p) => ({
+            ...p,
+            sectionThree: e.target.files[0],
+          }))
+        }
       />
     </div>
-  );
+
+    {/* ================= SAVE ================= */}
+
+    <button
+      onClick={handleSave}
+      disabled={loading}
+      className="px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-900 disabled:opacity-50"
+    >
+      {loading ? "Saving..." : "Save Landing Page"}
+    </button>
+
+    {/* ================= PRODUCT PICKER ================= */}
+
+    <ProductPickerModal
+      open={pickerIndex !== null}
+      onClose={() => setPickerIndex(null)}
+      onSelect={(product) => {
+        const items = [...data.sectionTwo.items];
+
+        items[pickerIndex] = {
+          ...items[pickerIndex],
+          productId: product._id,
+          productName: product.name,
+        };
+
+        setData((p) => ({
+          ...p,
+          sectionTwo: {
+            ...p.sectionTwo,
+            items,
+          },
+        }));
+      }}
+    />
+  </div>
+);
 }

@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-  ArrowLeft,
-  X,
-  Plus,
-  Save,
-  Image as ImageIcon,
-} from "lucide-react";
+import { ArrowLeft, X, Plus, Save, Image as ImageIcon } from "lucide-react";
 import { toast } from "react-toastify";
 import api from "../lib/api";
 import { cloudinaryOptimize } from "../utils/cloudinary";
@@ -31,6 +25,7 @@ export default function EditProduct() {
     description: "",
     shortDescription: "",
     category: "",
+    type: "Jutti",
     collection: "",
     price: "",
     comparePrice: "",
@@ -54,6 +49,7 @@ export default function EditProduct() {
           category: p.category || "",
           collection: p.collection || "",
           price: p.price || "",
+          type: p.type || "Jutti",
           comparePrice: p.comparePrice || "",
           active: p.active ?? true,
         });
@@ -123,26 +119,22 @@ export default function EditProduct() {
     setSizes(updated);
   };
 
-  const addSizeRow = () =>
-    setSizes((p) => [...p, { size: "", stock: 0 }]);
+  const addSizeRow = () => setSizes((p) => [...p, { size: "", stock: 0 }]);
 
   const removeSizeRow = (i) =>
-    sizes.length > 1 &&
-    setSizes((p) => p.filter((_, idx) => idx !== i));
+    sizes.length > 1 && setSizes((p) => p.filter((_, idx) => idx !== i));
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
-    if (!formData.name.trim())
-      return toast.error("Product name is required");
+    if (!formData.name.trim()) return toast.error("Product name is required");
 
-    if (!formData.category.trim())
-      return toast.error("Category is required");
+    if (!formData.category.trim()) return toast.error("Category is required");
 
     if (!formData.price || Number(formData.price) <= 0)
       return toast.error("Valid price required");
 
     const cleanedSizes = sizes.filter(
-      (s) => Number(s.size) > 0 && s.stock >= 0
+      (s) => Number(s.size) > 0 && s.stock >= 0,
     );
 
     if (!cleanedSizes.length)
@@ -153,9 +145,7 @@ export default function EditProduct() {
     try {
       const data = new FormData();
 
-      Object.entries(formData).forEach(([k, v]) =>
-        data.append(k, v)
-      );
+      Object.entries(formData).forEach(([k, v]) => data.append(k, v));
 
       data.append("sizes", JSON.stringify(cleanedSizes));
       data.append("existingImages", JSON.stringify(existingImages));
@@ -168,18 +158,14 @@ export default function EditProduct() {
         data.append("coverImage", coverImage);
       }
 
-      galleryImages.forEach((file) =>
-        data.append("galleryImages", file)
-      );
+      galleryImages.forEach((file) => data.append("galleryImages", file));
 
       await api.put(`/products-enhanced/${id}`, data);
 
       toast.success("Product updated successfully");
       navigate("/products");
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Update failed"
-      );
+      toast.error(err.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
     }
@@ -250,6 +236,13 @@ export default function EditProduct() {
                 onChange={handleInputChange}
               />
               <input
+                name="type"
+                placeholder="Type (e.g. Jutti)"
+                className="p-2 border rounded-lg"
+                value={formData.type}
+                onChange={handleInputChange}
+              />
+              <input
                 name="collection"
                 placeholder="Collection"
                 className="p-2 border rounded-lg"
@@ -261,9 +254,7 @@ export default function EditProduct() {
 
           {/* Pricing & Sizes */}
           <div className="bg-white p-6 rounded-xl border space-y-4">
-            <h2 className="text-lg font-semibold">
-              Pricing & Inventory
-            </h2>
+            <h2 className="text-lg font-semibold">Pricing & Inventory</h2>
 
             <div className="grid grid-cols-2 gap-4">
               <input
@@ -286,9 +277,7 @@ export default function EditProduct() {
 
             {/* Sizes */}
             <div className="space-y-3">
-              <label className="text-sm font-medium">
-                Size & Stock
-              </label>
+              <label className="text-sm font-medium">Size & Stock</label>
 
               {sizes.map((s, i) => (
                 <div key={i} className="flex gap-2 items-center">
@@ -343,10 +332,7 @@ export default function EditProduct() {
           {coverPreview ? (
             <div className="relative">
               <img
-                src={cloudinaryOptimize(
-                     coverPreview,
-                      "card"
-                    )}
+                src={cloudinaryOptimize(coverPreview, "card")}
                 alt="Cover"
                 className="aspect-square object-cover rounded-lg border"
               />
@@ -376,10 +362,7 @@ export default function EditProduct() {
             {existingImages.map((img, i) => (
               <div key={i} className="relative">
                 <img
-                   src={cloudinaryOptimize(
-                      img?.url,
-                      "card"
-                    )}
+                  src={cloudinaryOptimize(img?.url, "card")}
                   alt=""
                   className="aspect-square object-cover rounded-lg border"
                 />
@@ -395,10 +378,7 @@ export default function EditProduct() {
             {galleryPreviews.map((url, i) => (
               <div key={i} className="relative">
                 <img
-                   src={cloudinaryOptimize(
-                      url,
-                      "card"
-                    )}
+                  src={cloudinaryOptimize(url, "card")}
                   alt=""
                   className="aspect-square object-cover rounded-lg border"
                 />
