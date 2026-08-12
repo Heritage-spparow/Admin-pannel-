@@ -27,12 +27,17 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
+    // Let AuthContext / ProtectedRoute handle authentication.
+    // Don't redirect globally on /auth/me.
+    if (
+      error.response?.status === 401 &&
+      !error.config?.url?.includes('/auth/me')
+    ) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );
@@ -61,7 +66,7 @@ export const productAPI = {
   getFeatured: () => api.get('/products-enhanced/featured'),
   getTopRated: () => api.get('/products-enhanced/top/rated'),
   getCategories: () => api.get('/products-enhanced/categories'),
-   getCollections: () => api.get("/products-enhanced/collections"),
+  getCollections: () => api.get("/products-enhanced/collections"),
   search: (query) => api.get('/products-enhanced', { params: { search: query } }),
 };
 export const collectionAPI = {
