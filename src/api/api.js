@@ -11,6 +11,20 @@ const api = axios.create({
 
 /* 🔑 DO NOT FORCE CONTENT-TYPE */
 api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+
+  console.log(
+    "REQUEST:",
+    config.url,
+    "TOKEN:",
+    token ? "PRESENT" : "MISSING"
+  );
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
   // 🚫 let browser decide content-type for FormData
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
@@ -39,11 +53,6 @@ api.interceptors.response.use(
   }
 );
 
-const token = localStorage.getItem("token");
-
-if (token) {
-  config.headers.Authorization = `Bearer ${token}`;
-}
 
 // Auth API calls
 export const authAPI = {
