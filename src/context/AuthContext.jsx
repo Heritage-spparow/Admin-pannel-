@@ -23,16 +23,14 @@ export function AuthProvider({ children }) {
     }
   }
 
-  useEffect(() => {
-    // Don't call /auth/me when we're already on the login page.
-    if (location.pathname === "/login") {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+useEffect(() => {
+  if (location.pathname === "/login") {
+    setLoading(false);
+    return;
+  }
 
-    fetchMe();
-  }, [location.pathname]);
+  fetchMe();
+}, []);
   async function login(email, password, otp) {
     try {
       const { data } = await api.post("/auth/login", {
