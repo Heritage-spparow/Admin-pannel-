@@ -23,29 +23,35 @@ export function AuthProvider({ children }) {
     }
   }
 
-useEffect(() => {
-  if (location.pathname === "/login") {
-    setLoading(false);
-    return;
-  }
+  useEffect(() => {
+    if (location.pathname === "/login") {
+      setLoading(false);
+      return;
+    }
 
-  fetchMe();
-}, []);
-  async function login(email, password, otp) {
+    fetchMe();
+  }, []);
+  const login = async (email, password) => {
     try {
       const { data } = await api.post("/auth/login", {
         email,
         password,
-        otp,
       });
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       setUser(data.user);
 
-      return data;
-    } catch (e) {
-      throw e;
+      return { success: true };
+    } catch (error) {
+      console.error("Login error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Login failed",
+      };
     }
-  }
+  };
 
   async function logout() {
     try {

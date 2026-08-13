@@ -7,6 +7,8 @@ const api = axios.create({
   withCredentials: true,
 });
 
+
+
 /* 🔑 DO NOT FORCE CONTENT-TYPE */
 api.interceptors.request.use((config) => {
   // 🚫 let browser decide content-type for FormData
@@ -36,6 +38,12 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+const token = localStorage.getItem("token");
+
+if (token) {
+  config.headers.Authorization = `Bearer ${token}`;
+}
 
 // Auth API calls
 export const authAPI = {
