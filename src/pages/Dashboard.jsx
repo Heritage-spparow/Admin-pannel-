@@ -134,6 +134,7 @@ export default function Dashboard() {
         setChartData(chartRes.data.data || []);
         setRecentOrders(ordersRes.data.orders || []);
       } catch (err) {
+        toast.error(err);
         console.error("Dashboard load failed:", err);
       } finally {
         setLoading(false);
